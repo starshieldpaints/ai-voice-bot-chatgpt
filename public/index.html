@@ -351,6 +351,16 @@
       const processedInputItems = new Set();
       const cachedSearchSummaries = new Map();
       const pendingTypedMessages = [];
+      const RAW_API_BASE =
+        window.API_BASE_URL ||
+        (window.location.hostname === "localhost"
+          ? ""
+          : "https://voice-agent-1058353954635.us-central1.run.app");
+      const API_BASE = RAW_API_BASE.replace(/\/$/, "");
+      const apiUrl = path => {
+        const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+        return `${API_BASE}${normalizedPath}`;
+      };
 
       appendMessage(
         "agent",
@@ -559,7 +569,7 @@
       }
 
       async function callToolEndpoint(name, payload = {}) {
-        const response = await fetch(`/tool/${name}`, {
+        const response = await fetch(apiUrl(`/tool/${name}`), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -671,7 +681,7 @@
 
       async function ping() {
         try {
-          const response = await fetch("/health");
+          const response = await fetch(apiUrl("/health"));
           if (!response.ok) throw new Error("Health check failed");
           const payload = await response.json();
           setStatus(payload.ok ? "Ready" : "Backend health check failed", payload.ok ? "ok" : "error");
@@ -693,7 +703,7 @@
           pendingTypedMessages.length = 0;
           appendMessage("agent", "Voice session is live. Ask about any StarShield product or tap the mic to talk.");
 
-          const sessionResponse = await fetch("/session");
+          const sessionResponse = await fetch(apiUrl("/session"));
           const sessionPayload = await sessionResponse.json().catch(() => ({}));
           if (!sessionResponse.ok) {
             throw new Error(sessionPayload.error || "Unable to obtain session from backend");
