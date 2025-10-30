@@ -1,0 +1,23 @@
+{
+  "name": "voice_agent_chatgpt",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "NODE_ENV=production node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@openai/agents": "^0.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "morgan": "^1.10.1",
+    "nanoid": "^5.1.6",
+    "node-fetch": "^3.3.2"
+  }
+}

@@ -1,0 +1,938 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>StarShield Voice Agent</title>
+    <style>
+      :root {
+        --red: #c41230;
+        --black: #111;
+        --white: #ffffff;
+        --gray: #f4f4f4;
+        --accent: #d83b25;
+        font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top right, rgba(212, 48, 56, 0.1), transparent 55%) var(--white);
+        color: var(--black);
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        padding: 2.5rem 1.5rem;
+      }
+
+      .app-shell {
+        width: min(1100px, 100%);
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px);
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(17, 17, 17, 0.12);
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        border: 1px solid rgba(17, 17, 17, 0.05);
+      }
+
+      header {
+        padding: 1.75rem 2.5rem 1.25rem;
+        background: linear-gradient(135deg, var(--black), #1e1e1e);
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      header .title-block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      header span {
+        font-size: 0.9rem;
+        opacity: 0.75;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      header .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.1rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+      }
+
+      header .status-badge.indicator-ok {
+        color: #5ef27b;
+      }
+
+      header .status-badge.indicator-error {
+        color: #ff7b7b;
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+        padding: 1.75rem 2.5rem 2.25rem;
+      }
+
+      .conversation-area {
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+      }
+
+      .mic-panel {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+      }
+
+      .mic-button {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        border: none;
+        background: var(--red);
+        color: var(--white);
+        font-size: 1.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 15px 30px rgba(196, 18, 48, 0.35);
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+
+      .mic-button:disabled {
+        background: rgba(196, 18, 48, 0.4);
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .mic-button:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 35px rgba(196, 18, 48, 0.45);
+      }
+
+      .mic-labels {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .mic-labels strong {
+        font-size: 1.1rem;
+        letter-spacing: 0.03em;
+      }
+
+      .mic-labels span {
+        font-size: 0.9rem;
+        color: rgba(17, 17, 17, 0.65);
+      }
+
+      .conversation-feed {
+        flex: 1;
+        background: var(--gray);
+        border-radius: 18px;
+        padding: 1.75rem 1.6rem;
+        border: 1px solid rgba(17, 17, 17, 0.05);
+        box-shadow: inset 0 8px 18px rgba(17, 17, 17, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+        max-height: 520px;
+        overflow-y: auto;
+      }
+
+      .message {
+        padding: 1rem 1.2rem;
+        border-radius: 16px;
+        background: var(--white);
+        box-shadow: 0 12px 22px rgba(17, 17, 17, 0.08);
+        border: 1px solid rgba(17, 17, 17, 0.04);
+        max-width: 92%;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .message::before {
+        content: attr(data-role);
+        font-size: 0.75rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: rgba(17, 17, 17, 0.6);
+      }
+
+      .message.user {
+        margin-left: auto;
+        background: linear-gradient(135deg, var(--red), #f14747);
+        color: var(--white);
+        box-shadow: 0 18px 26px rgba(196, 18, 48, 0.2);
+        border: none;
+      }
+
+      .message.user::before {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .message.agent {
+        background: var(--white);
+      }
+
+      .message.kb {
+        background: #fff4f4;
+        border: 1px solid rgba(196, 18, 48, 0.2);
+      }
+
+      .message time {
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.55;
+      }
+
+      .info-banner {
+        background: rgba(17, 17, 17, 0.88);
+        color: var(--white);
+        border-radius: 14px;
+        padding: 1.1rem 1.4rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.03em;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 15px 30px rgba(17, 17, 17, 0.18);
+      }
+
+      .info-banner strong {
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 0.75rem;
+        opacity: 0.65;
+      }
+
+      .input-panel {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+      }
+
+      .input-panel input {
+        flex: 1;
+        padding: 0.9rem 1.2rem;
+        border-radius: 999px;
+        border: 1px solid rgba(17, 17, 17, 0.15);
+        background: rgba(255, 255, 255, 0.85);
+        font-size: 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .input-panel input:focus {
+        outline: none;
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(196, 18, 48, 0.15);
+      }
+
+      .input-panel button {
+        padding: 0.9rem 1.8rem;
+        border-radius: 999px;
+        border: none;
+        background: var(--black);
+        color: var(--white);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .input-panel button:hover {
+        background: var(--red);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(196, 18, 48, 0.25);
+      }
+
+      .input-panel button:disabled {
+        background: rgba(17, 17, 17, 0.35);
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      audio {
+        display: none;
+      }
+
+      @media (max-width: 960px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header>
+        <div class="title-block">
+          <h1>StarShield Voice Agent</h1>
+          <span>Real-time knowledge companion</span>
+        </div>
+        <div class="status-badge" id="statusBadge">
+          <strong>Status:</strong> <span id="status">Checking...</span>
+        </div>
+      </header>
+      <main>
+        <section class="conversation-area">
+          <div class="mic-panel">
+            <button id="start" class="mic-button" title="Start voice conversation">
+              🎙️
+            </button>
+            <button id="stop" class="mic-button" style="background:#444;" disabled title="Stop voice conversation">
+              ⏹️
+            </button>
+            <div class="mic-labels">
+              <strong>Voice Control</strong>
+              <span>Tap the mic to begin. The conversation log updates live below.</span>
+            </div>
+          </div>
+          <div class="conversation-feed" id="conversation"></div>
+          <form id="textForm" class="input-panel" autocomplete="off">
+            <input
+              id="textInput"
+              type="text"
+              placeholder="Ask a question or describe a StarShield scenario…"
+            >
+            <button type="submit">Send</button>
+          </form>
+          <div class="info-banner">
+            <strong>Tip</strong>
+            <span>Ask about any StarShield product or scenario. The agent will respond and display a written summary here.</span>
+          </div>
+        </section>
+      </main>
+    </div>
+    <audio id="assistantAudio" autoplay></audio>
+    <script>
+      const statusEl = document.getElementById("status");
+      const statusBadge = document.getElementById("statusBadge");
+      const startBtn = document.getElementById("start");
+      const stopBtn = document.getElementById("stop");
+      const audioEl = document.getElementById("assistantAudio");
+      const conversationEl = document.getElementById("conversation");
+      const textForm = document.getElementById("textForm");
+      const textInput = document.getElementById("textInput");
+
+      let pc;
+      let mic;
+      let dataChannel;
+      const transcriptBuffer = new Map();
+      const processedInputItems = new Set();
+      const cachedSearchSummaries = new Map();
+      const pendingTypedMessages = [];
+
+      appendMessage(
+        "agent",
+        "Hello! Tap the microphone to start a conversation about any StarShield product or scenario."
+      );
+
+      function setStatus(message, type = "") {
+        statusEl.textContent = message;
+        statusBadge.classList.remove("indicator-ok", "indicator-error");
+        if (type === "ok") statusBadge.classList.add("indicator-ok");
+        else if (type === "error") statusBadge.classList.add("indicator-error");
+      }
+
+      function logEvent(message) {
+        console.log("[Agent]", message);
+      }
+
+      function appendMessage(role, message) {
+        const clean = (message || "").trim();
+        if (!clean) return;
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("message", role);
+        const roleLabel =
+          role === "user" ? "You" : role === "agent" ? "Assistant" : "Knowledge";
+        wrapper.setAttribute("data-role", roleLabel);
+
+        const body = document.createElement("div");
+        body.textContent = clean;
+        wrapper.appendChild(body);
+
+        const time = document.createElement("time");
+        time.textContent = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+        wrapper.appendChild(time);
+
+        conversationEl.appendChild(wrapper);
+        conversationEl.scrollTop = conversationEl.scrollHeight;
+      }
+
+      function normalizeWhitespace(text = "") {
+        return text.replace(/\s+/g, " ").trim();
+      }
+
+      function summarizeSnippet(snippet = "", fallbackTitle = "this product") {
+        const lines = snippet
+          .split(/\r?\n/)
+          .map(line => normalizeWhitespace(line))
+          .filter(Boolean);
+
+        const info = {
+          product: "",
+          oneLiner: "",
+          description: "",
+          component: "",
+          coverageNew: "",
+          coverageRepaint: "",
+          coats: "",
+          uv: "",
+          problem: ""
+        };
+
+        let currentKey = "";
+        for (const line of lines) {
+          if (line.toLowerCase().startsWith("product name")) {
+            currentKey = "product";
+            info.product = line.replace(/product name/i, "").trim();
+          } else if (line.toLowerCase().startsWith("one liner")) {
+            currentKey = "oneLiner";
+            info.oneLiner = line.replace(/one liner.*/i, "").trim();
+          } else if (line.toLowerCase().startsWith("one liner about product")) {
+            currentKey = "oneLiner";
+            info.oneLiner = line.replace(/one liner about product/i, "").trim();
+          } else if (line.toLowerCase().startsWith("description")) {
+            currentKey = "description";
+            info.description = line.replace(/description/i, "").trim();
+          } else if (line.toLowerCase().startsWith("component")) {
+            currentKey = "component";
+            info.component = line.replace(/component/i, "").trim();
+          } else if (line.toLowerCase().includes("coverage") && line.toLowerCase().includes("new")) {
+            currentKey = "coverageNew";
+            info.coverageNew = line.replace(/coverage.*new.*/i, "").trim();
+          } else if (line.toLowerCase().includes("coverage") && line.toLowerCase().includes("repaint")) {
+            currentKey = "coverageRepaint";
+            info.coverageRepaint = line.replace(/coverage.*paint.*/i, "").trim();
+          } else if (line.toLowerCase().startsWith("recommended coat")) {
+            currentKey = "coats";
+            info.coats = line.replace(/recommended coat.*?/i, "").trim();
+          } else if (line.toLowerCase().includes("uv")) {
+            currentKey = "uv";
+            info.uv = line.replace(/is this uv stable\??/i, "").replace(/uv stability?/i, "").trim();
+          } else if (line.toLowerCase().startsWith("problem statement")) {
+            currentKey = "problem";
+            info.problem = line.replace(/problem statement.*?/i, "").trim();
+          } else if (/^http/i.test(line) || /^url:/i.test(line)) {
+            continue;
+          } else if (currentKey) {
+            info[currentKey] = (info[currentKey] ? info[currentKey] + " " : "") + line;
+          }
+        }
+
+        const productName = info.product || fallbackTitle;
+        const description =
+          info.oneLiner ||
+          info.description ||
+          `I found details on ${productName}, but the summary is limited.`;
+
+        const details = [];
+        if (info.component) details.push(`Component: ${info.component}`);
+        if (info.uv) details.push(`UV stability: ${info.uv}`);
+        if (info.problem) details.push(`Solves: ${info.problem}`);
+        if (info.coverageNew) details.push(`Coverage (new surface): ${info.coverageNew}`);
+        if (info.coverageRepaint) details.push(`Coverage (repaint): ${info.coverageRepaint}`);
+        if (info.coats) details.push(`Recommended coats: ${info.coats}`);
+
+        return { productName, description, bulletPoints: details };
+      }
+
+      function formatSearchSummary(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+          return "I couldn't find anything about that in the StarShield knowledge base.";
+        }
+
+        const [primary, ...rest] = items;
+        const cleaned = summarizeSnippet(primary?.snippet, primary?.title);
+        let narrative = `Here's what I found on ${cleaned.productName}: ${cleaned.description}`;
+
+        if (cleaned.bulletPoints.length) {
+          narrative += ` Key points include ${cleaned.bulletPoints.join("; ")}.`;
+        }
+
+        const additionalTitles = rest
+          .map(item => item?.title)
+          .filter(title => title && title !== cleaned.productName)
+          .slice(0, 3);
+        if (additionalTitles.length) {
+          narrative += ` I also spotted related products like ${additionalTitles.join(", ")}.`;
+        }
+
+        if (primary?.url) {
+          narrative += ` You can review the detailed document here if needed: ${primary.url}`;
+        }
+
+        return narrative;
+      }
+
+      async function performSearchAndShare(query, { triggerResponse = false } = {}) {
+        const cleaned = (query || "").trim();
+        if (!cleaned) {
+          if (triggerResponse && dataChannel && dataChannel.readyState === "open") {
+            dataChannel.send(JSON.stringify({ type: "response.create" }));
+          }
+          return;
+        }
+
+        try {
+          const rawResults = await callToolEndpoint("search_docs", {
+            query: cleaned
+          });
+          const items = Array.isArray(rawResults?.results)
+            ? rawResults.results
+            : [];
+          const lower = cleaned.toLowerCase();
+          let summary = cachedSearchSummaries.get(lower);
+          let isNewSummary = false;
+          if (!summary) {
+            summary = formatSearchSummary(items);
+            cachedSearchSummaries.set(lower, summary);
+            isNewSummary = true;
+          }
+
+          logEvent(`Auto search summary:\n${summary}`);
+          appendMessage("kb", summary);
+
+          const shouldSendSummary =
+            isNewSummary || !processedInputItems.has(`summary-${lower}`);
+
+          if (
+            shouldSendSummary &&
+            dataChannel &&
+            dataChannel.readyState === "open"
+          ) {
+            dataChannel.send(
+              JSON.stringify({
+                type: "conversation.item.create",
+                item: {
+                  type: "message",
+                  role: "system",
+                  content: [
+                    {
+                      type: "input_text",
+                      text: `Knowledge base summary:\n${summary}\n\nCompose a natural, conversational reply for the user that weaves these points into fluent sentences.`
+                    }
+                  ]
+                }
+              })
+            );
+            processedInputItems.add(`summary-${lower}`);
+            if (triggerResponse) {
+              dataChannel.send(JSON.stringify({ type: "response.create" }));
+            }
+          }
+        } catch (err) {
+          logEvent(`search_docs failed: ${err.message}`);
+          if (triggerResponse && dataChannel && dataChannel.readyState === "open") {
+            dataChannel.send(JSON.stringify({ type: "response.create" }));
+          }
+        }
+      }
+
+      async function callToolEndpoint(name, payload = {}) {
+        const response = await fetch(`/tool/${name}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await response.text();
+        let data;
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch {
+          data = text;
+        }
+
+        if (!response.ok) {
+          const errorMessage =
+            (data && typeof data === "object" && data.error) ||
+            (typeof data === "string" && data) ||
+            response.statusText ||
+            `Tool ${name} failed`;
+          throw new Error(errorMessage);
+        }
+
+        return data ?? {};
+      }
+
+      function sendToolResult(callId, output, { startResponse = true } = {}) {
+        if (!dataChannel || dataChannel.readyState !== "open") return;
+
+        dataChannel.send(
+          JSON.stringify({
+            type: "conversation.item.create",
+            item: {
+              type: "function_call_output",
+              call_id: callId,
+              output
+            }
+          })
+        );
+
+        if (startResponse) {
+          dataChannel.send(JSON.stringify({ type: "response.create" }));
+        }
+      }
+
+      async function handleFunctionCall(call) {
+        try {
+          const toolName = (call.name || "").trim();
+          if (!toolName) {
+            throw new Error("Tool call missing name");
+          }
+          const args = call.arguments ? JSON.parse(call.arguments) : {};
+          let result;
+
+          switch (toolName) {
+            case "search_docs": {
+              if (!args.query) {
+                throw new Error("search_docs requires a query string");
+              }
+              const normalizedQuery = args.query.trim().toLowerCase();
+              let summary;
+              if (normalizedQuery && cachedSearchSummaries.has(normalizedQuery)) {
+                summary = cachedSearchSummaries.get(normalizedQuery);
+              } else {
+                const payload = { query: args.query };
+                if (typeof args.top_k === "number") {
+                  payload.top_k = args.top_k;
+                }
+                const rawResults = await callToolEndpoint("search_docs", payload);
+                const items = Array.isArray(rawResults?.results)
+                  ? rawResults.results
+                  : [];
+                summary = formatSearchSummary(items);
+                if (normalizedQuery) {
+                  cachedSearchSummaries.set(normalizedQuery, summary);
+                }
+              }
+              logEvent(`Tool search_docs summary:\n${summary}`);
+              result = summary;
+              break;
+            }
+            case "create_lead": {
+              const { name, phone, intent } = args;
+              if (!name || !phone || !intent) {
+                throw new Error(
+                  "create_lead requires name, phone, and intent fields"
+                );
+              }
+              result = await callToolEndpoint("create_lead", {
+                name,
+                phone,
+                intent
+              });
+              break;
+            }
+            default:
+              throw new Error(`Unknown tool requested: ${toolName}`);
+          }
+
+          logEvent(`Tool ${toolName} succeeded`);
+          sendToolResult(call.callId, result);
+        } catch (err) {
+          const message =
+            err instanceof Error ? err.message : "Tool call failed";
+          const safeName = (call.name || "").trim() || "unknown";
+          logEvent(`Tool ${safeName} failed: ${message}`);
+          sendToolResult(call.callId, { error: message, tool: safeName });
+        }
+      }
+
+      async function ping() {
+        try {
+          const response = await fetch("/health");
+          if (!response.ok) throw new Error("Health check failed");
+          const payload = await response.json();
+          setStatus(payload.ok ? "Ready" : "Backend health check failed", payload.ok ? "ok" : "error");
+        } catch (err) {
+          console.error(err);
+          setStatus("Backend not reachable", "error");
+        }
+      }
+      ping();
+
+      async function startVoice() {
+        try {
+          setStatus("Creating real-time session...");
+          logEvent("Requesting ephemeral session from backend");
+          conversationEl.innerHTML = "";
+          transcriptBuffer.clear();
+          processedInputItems.clear();
+          cachedSearchSummaries.clear();
+          pendingTypedMessages.length = 0;
+          appendMessage("agent", "Voice session is live. Ask about any StarShield product or tap the mic to talk.");
+
+          const sessionResponse = await fetch("/session");
+          const sessionPayload = await sessionResponse.json().catch(() => ({}));
+          if (!sessionResponse.ok) {
+            throw new Error(sessionPayload.error || "Unable to obtain session from backend");
+          }
+          const sessionToken = sessionPayload?.client_secret?.value ?? sessionPayload?.client_secret;
+          if (!sessionToken) {
+            throw new Error("Backend response missing client_secret");
+          }
+
+          pc = new RTCPeerConnection({
+            iceServers: [
+              { urls: "stun:stun.l.google.com:19302" }
+            ]
+          });
+
+          pc.addEventListener("track", event => {
+            audioEl.srcObject = event.streams[0];
+          });
+
+          pc.addEventListener("connectionstatechange", () => {
+            logEvent(`Peer connection state: ${pc.connectionState}`);
+          });
+
+          dataChannel = pc.createDataChannel("oai-events");
+          dataChannel.addEventListener("open", () => logEvent("Data channel opened"));
+          dataChannel.addEventListener("close", () => logEvent("Data channel closed"));
+          dataChannel.addEventListener("message", evt => {
+            let payload;
+            try {
+              payload = JSON.parse(evt.data);
+            } catch {
+              logEvent(`Agent event: ${evt.data}`);
+              return;
+            }
+
+            switch (payload.type) {
+              case "conversation.item.created": {
+                const item = payload.item;
+                if (
+                  item?.type === "message" &&
+                  item.role === "user" &&
+                  Array.isArray(item.content)
+                ) {
+                  const textPart = item.content.find(
+                    entry => entry?.type === "input_text" && entry.text
+                  );
+                  if (textPart && !processedInputItems.has(item.id)) {
+                    const normalized = textPart.text.trim().toLowerCase();
+                    const pendingIndex = pendingTypedMessages.findIndex(
+                      val => val === normalized
+                    );
+                    if (pendingIndex >= 0) {
+                      pendingTypedMessages.splice(pendingIndex, 1);
+                    } else {
+                      appendMessage("user", textPart.text);
+                      performSearchAndShare(textPart.text, { triggerResponse: true });
+                    }
+                    processedInputItems.add(item.id);
+                  }
+                }
+                break;
+              }
+              case "conversation.item.input_audio_transcription.delta": {
+                const delta = typeof payload.delta === "string" ? payload.delta : "";
+                if (delta) {
+                  const key = `user-${payload.item_id}`;
+                  const previous = transcriptBuffer.get(key) || "";
+                  transcriptBuffer.set(key, previous + delta);
+                }
+                break;
+              }
+              case "conversation.item.input_audio_transcription.completed": {
+                const key = `user-${payload.item_id}`;
+                const finalTranscript =
+                  (typeof payload.transcript === "string" && payload.transcript) ||
+                  transcriptBuffer.get(key) ||
+                  "";
+                if (finalTranscript) {
+                  appendMessage("user", finalTranscript.trim());
+                  transcriptBuffer.delete(key);
+                  if (!processedInputItems.has(payload.item_id)) {
+                    processedInputItems.add(payload.item_id);
+                    performSearchAndShare(finalTranscript, { triggerResponse: true });
+                  }
+                }
+                break;
+              }
+              case "function_call":
+                logEvent(`Tool requested: ${(payload.name || "").trim() || "unknown"}`);
+                handleFunctionCall(payload);
+                break;
+              case "response.output_text.delta": {
+                const key = `text-${payload.item_id}`;
+                const existing = transcriptBuffer.get(key) || "";
+                const delta = typeof payload.delta === "string" ? payload.delta : "";
+                if (delta) {
+                  transcriptBuffer.set(key, existing + delta);
+                  logEvent(`Agent: ${delta}`);
+                }
+                break;
+              }
+              case "response.output_text.done": {
+                const key = `text-${payload.item_id}`;
+                let final = "";
+                if (Array.isArray(payload.output_text)) {
+                  final = payload.output_text.join("");
+                } else if (typeof payload.output_text === "string") {
+                  final = payload.output_text;
+                } else {
+                  final = transcriptBuffer.get(key) || "";
+                }
+                if (final) appendMessage("agent", final.trim());
+                transcriptBuffer.delete(key);
+                break;
+              }
+              case "response.audio_transcript.delta": {
+                const delta = typeof payload.delta === "string" ? payload.delta : "";
+                if (delta) {
+                  const previous = transcriptBuffer.get(payload.item_id) || "";
+                  transcriptBuffer.set(payload.item_id, previous + delta);
+                }
+                break;
+              }
+              case "response.audio_transcript.done": {
+                const final =
+                  (typeof payload.transcript === "string" && payload.transcript) ||
+                  transcriptBuffer.get(payload.item_id) ||
+                  "";
+                if (final) appendMessage("agent", final.trim());
+                transcriptBuffer.delete(payload.item_id);
+                break;
+              }
+              default:
+                logEvent(`Agent event: ${evt.data}`);
+            }
+          });
+
+          setStatus("Requesting microphone...");
+          mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mic.getTracks().forEach(track => pc.addTrack(track, mic));
+
+          setStatus("Sending offer to OpenAI...");
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+
+          const realtimeResponse = await fetch(
+            `https://api.openai.com/v1/realtime?model=${encodeURIComponent(sessionPayload.model || sessionPayload.default_model || "gpt-realtime-mini-2025-10-06")}`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${sessionToken}`,
+                "Content-Type": "application/sdp",
+                "OpenAI-Beta": "realtime=v1"
+              },
+              body: offer.sdp
+            }
+          );
+
+          const answer = await realtimeResponse.text();
+          if (!realtimeResponse.ok) {
+            throw new Error(`Realtime handshake failed: ${answer}`);
+          }
+
+          await pc.setRemoteDescription({ type: "answer", sdp: answer });
+
+          logEvent("Realtime session ready");
+          setStatus("Connected", "ok");
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+        } catch (err) {
+          console.error(err);
+          setStatus(err.message || "Failed to start voice session", "error");
+          stopVoice();
+        }
+      }
+
+      function stopVoice() {
+        if (mic) {
+          mic.getTracks().forEach(track => track.stop());
+          mic = undefined;
+        }
+        if (dataChannel && dataChannel.readyState !== "closed") {
+          dataChannel.close();
+        }
+        if (pc) {
+          pc.close();
+          pc = undefined;
+        }
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        setStatus("Stopped");
+        logEvent("Voice session stopped");
+      }
+
+      startBtn.addEventListener("click", startVoice);
+      stopBtn.addEventListener("click", stopVoice);
+
+      textForm.addEventListener("submit", async evt => {
+        evt.preventDefault();
+        const message = (textInput.value || "").trim();
+        if (!message) return;
+
+        if (!dataChannel || dataChannel.readyState !== "open") {
+          appendMessage("agent", "Voice session is not connected yet. Tap the microphone first.");
+          return;
+        }
+
+        const eventCreate = {
+          type: "conversation.item.create",
+          item: {
+            type: "message",
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: message
+              }
+            ]
+          }
+        };
+
+        try {
+          dataChannel.send(JSON.stringify(eventCreate));
+          appendMessage("user", message);
+          processedInputItems.add(`typed-${Date.now()}`);
+          textInput.value = "";
+          pendingTypedMessages.push(message.toLowerCase());
+          await performSearchAndShare(message, { triggerResponse: true });
+        } catch (err) {
+          console.error(err);
+          appendMessage("agent", "I couldn't send that message—please retry after reconnecting.");
+        }
+      });
+
+      window.addEventListener("beforeunload", stopVoice);
+    </script>
+  </body>
+</html>
