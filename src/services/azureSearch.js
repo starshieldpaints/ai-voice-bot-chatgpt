@@ -36,12 +36,6 @@ export async function searchDocs(query, topK = 5) {
       d.name ||
       d.id ||
       "Result";
-    const url =
-      d.metadata_storage_path ||
-      d.url ||
-      d.link ||
-      d.source ||
-      null;
     const snippetSource =
       d.content ||
       d.text ||
@@ -51,7 +45,6 @@ export async function searchDocs(query, topK = 5) {
 
     return {
       title,
-      url,
       // keep snippet short to avoid flooding function output
       snippet: typeof snippetSource === "string" ? snippetSource.slice(0, 800) : ""
     };

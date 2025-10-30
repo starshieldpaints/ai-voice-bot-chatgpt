@@ -472,12 +472,12 @@
 
       function formatSearchSummary(items) {
         if (!Array.isArray(items) || items.length === 0) {
-          return "I couldn't find anything about that in the StarShield knowledge base.";
+          return "StarShield is a protective coatings and advanced paints company. I couldn't find matching information in the StarShield knowledge base, so ask follow-up questions about our paint and coating solutions.";
         }
 
         const [primary, ...rest] = items;
         const cleaned = summarizeSnippet(primary?.snippet, primary?.title);
-        let narrative = `Here's what I found on ${cleaned.productName}: ${cleaned.description}`;
+        let narrative = `StarShield is a protective coatings and advanced paints company. Here's what I found on ${cleaned.productName}: ${cleaned.description}`;
 
         if (cleaned.bulletPoints.length) {
           narrative += ` Key points include ${cleaned.bulletPoints.join("; ")}.`;
@@ -489,10 +489,6 @@
           .slice(0, 3);
         if (additionalTitles.length) {
           narrative += ` I also spotted related products like ${additionalTitles.join(", ")}.`;
-        }
-
-        if (primary?.url) {
-          narrative += ` You can review the detailed document here if needed: ${primary.url}`;
         }
 
         return narrative;
@@ -722,7 +718,29 @@
           });
 
           dataChannel = pc.createDataChannel("oai-events");
-          dataChannel.addEventListener("open", () => logEvent("Data channel opened"));
+          dataChannel.addEventListener("open", () => {
+            logEvent("Data channel opened");
+            const brandPrimer = [
+              "You are the StarShield paints assistant for an Indian company that specializes in advanced paints, waterproofing, insulation, and protective coatings. Never refer to StarShield as a security or defense company.",
+              "Keep every reply focused on StarShield's paints and surface-protection solutions.",
+              "Do not share or mention any URLs, links, or document addresses with customers. Offer summaries instead."
+            ].join("\n");
+            dataChannel.send(
+              JSON.stringify({
+                type: "conversation.item.create",
+                item: {
+                  type: "message",
+                  role: "system",
+                  content: [
+                    {
+                      type: "input_text",
+                      text: `${brandPrimer}\nAcknowledge these brand guardrails silently and comply in all responses.`
+                    }
+                  ]
+                }
+              })
+            );
+          });
           dataChannel.addEventListener("close", () => logEvent("Data channel closed"));
           dataChannel.addEventListener("message", evt => {
             let payload;

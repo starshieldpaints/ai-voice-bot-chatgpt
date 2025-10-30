@@ -64,7 +64,7 @@ export async function createRealtimeSession() {
   const body = {
     // choose the same model you selected in the portal
     model: env.MODEL_ID || "gpt-realtime-mini-2025-10-06",
-    voice: "marin",
+    voice: "sage",
     modalities: ["audio", "text"],
     prompt: {
       id: env.PROMPT_ID, // pmpt_6901cc25...656
