@@ -94,59 +94,176 @@
         padding: 1.75rem 2.5rem 2.25rem;
       }
 
+      .is-hidden {
+        display: none !important;
+      }
+
       .conversation-area {
         display: flex;
         flex-direction: column;
         gap: 1.75rem;
       }
-
-      .mic-panel {
+      
+      .conversation-actions {
         display: flex;
         align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .voice-hint {
+        font-size: 0.85rem;
+        color: rgba(17, 17, 17, 0.65);
+        letter-spacing: 0.04em;
+      }
+
+      .lead-onboarding {
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 18px;
+        border: 1px solid rgba(17, 17, 17, 0.05);
+        padding: 1.75rem 1.75rem 1.5rem;
+        box-shadow: 0 20px 34px rgba(17, 17, 17, 0.08);
+        display: flex;
+        flex-direction: column;
         gap: 1.25rem;
       }
 
-      .mic-button {
-        width: 72px;
-        height: 72px;
-        border-radius: 50%;
+      .lead-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .lead-form.lead-form--locked input,
+      .lead-form.lead-form--locked textarea {
+        background: rgba(244, 244, 244, 0.5);
+      }
+
+      .lead-intro {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .lead-intro h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .lead-intro p {
+        margin: 0;
+        font-size: 0.95rem;
+        color: rgba(17, 17, 17, 0.7);
+      }
+
+      .lead-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+      }
+
+      .lead-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .lead-field label {
+        font-size: 0.78rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(17, 17, 17, 0.72);
+      }
+
+      .lead-field input,
+      .lead-field textarea {
+        border-radius: 12px;
+        border: 1px solid rgba(17, 17, 17, 0.12);
+        padding: 0.65rem 0.85rem;
+        font-size: 0.95rem;
+        background: rgba(244, 244, 244, 0.6);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+
+      .lead-field textarea {
+        resize: vertical;
+        min-height: 78px;
+      }
+
+      .lead-field input:focus,
+      .lead-field textarea:focus {
+        outline: none;
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(196, 18, 48, 0.18);
+        background: var(--white);
+      }
+
+      .lead-field--wide {
+        grid-column: span 2;
+      }
+
+      @media (max-width: 720px) {
+        .lead-field--wide {
+          grid-column: span 1;
+        }
+      }
+
+      .lead-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .lead-submit {
+        align-self: flex-start;
+        padding: 0.95rem 2.4rem;
+        border-radius: 999px;
         border: none;
         background: var(--red);
         color: var(--white);
-        font-size: 1.5rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 15px 30px rgba(196, 18, 48, 0.35);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.85rem;
+        font-weight: 600;
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        box-shadow: 0 18px 30px rgba(196, 18, 48, 0.25);
       }
 
-      .mic-button:disabled {
+      .lead-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 22px 34px rgba(196, 18, 48, 0.35);
+      }
+
+      .lead-submit:disabled {
         background: rgba(196, 18, 48, 0.4);
-        cursor: not-allowed;
         box-shadow: none;
+        cursor: not-allowed;
       }
 
-      .mic-button:not(:disabled):hover {
-        transform: translateY(-2px);
-        box-shadow: 0 18px 35px rgba(196, 18, 48, 0.45);
+      .lead-submit--voice {
+        margin: 0;
       }
 
-      .mic-labels {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-      }
-
-      .mic-labels strong {
-        font-size: 1.1rem;
-        letter-spacing: 0.03em;
-      }
-
-      .mic-labels span {
+      .form-message {
+        margin: 0;
         font-size: 0.9rem;
+        min-height: 1.2rem;
         color: rgba(17, 17, 17, 0.65);
+      }
+
+      .form-message[data-status="pending"] {
+        color: #c48a12;
+      }
+
+      .form-message[data-status="success"] {
+        color: #0a8a2a;
+      }
+
+      .form-message[data-status="error"] {
+        color: var(--red);
       }
 
       .conversation-feed {
@@ -304,18 +421,41 @@
         </div>
       </header>
       <main>
-        <section class="conversation-area">
-          <div class="mic-panel">
-            <button id="start" class="mic-button" title="Start voice conversation">
-              🎙️
-            </button>
-            <button id="stop" class="mic-button" style="background:#444;" disabled title="Stop voice conversation">
-              ⏹️
-            </button>
-            <div class="mic-labels">
-              <strong>Voice Control</strong>
-              <span>Tap the mic to begin. The conversation log updates live below.</span>
+        <section class="lead-onboarding" id="leadSection">
+          <form id="leadForm" class="lead-form" autocomplete="off" novalidate>
+            <div class="lead-intro">
+              <h2>Start Your Consultation</h2>
+              <p>Share your details to sync a lead in Dynamics 365 and launch the live voice assistant.</p>
             </div>
+            <div class="lead-grid">
+              <div class="lead-field">
+                <label for="leadName">Full name</label>
+                <input id="leadName" name="name" type="text" placeholder="e.g. Ananya Sharma" required>
+              </div>
+              <div class="lead-field">
+                <label for="leadPhone">Phone number</label>
+                <input id="leadPhone" name="phone" type="tel" placeholder="+91 98765 43210" required>
+              </div>
+              <div class="lead-field">
+                <label for="leadEmail">Email (optional)</label>
+                <input id="leadEmail" name="email" type="email" placeholder="name@example.com">
+              </div>
+              <div class="lead-field lead-field--wide">
+                <label for="leadIntent">Project focus</label>
+                <textarea id="leadIntent" name="intent" rows="2" placeholder="How can StarShield help you today?" required></textarea>
+              </div>
+            </div>
+            <div class="lead-actions">
+              <button type="submit" class="lead-submit" id="leadSubmitButton">
+                Start Voice Consultation
+              </button>
+              <p id="leadFormMessage" class="form-message" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </section>
+        <section class="conversation-area is-hidden" id="conversationSection">
+          <div class="conversation-actions is-hidden" id="conversationActions">
+            <span class="voice-hint">Use the button to start or stop the live voice consultation.</span>
           </div>
           <div class="conversation-feed" id="conversation"></div>
           <form id="textForm" class="input-panel" autocomplete="off">
@@ -323,6 +463,7 @@
               id="textInput"
               type="text"
               placeholder="Ask a question or describe a StarShield scenario…"
+              disabled
             >
             <button type="submit">Send</button>
           </form>
@@ -337,10 +478,18 @@
     <script>
       const statusEl = document.getElementById("status");
       const statusBadge = document.getElementById("statusBadge");
-      const startBtn = document.getElementById("start");
-      const stopBtn = document.getElementById("stop");
+      const leadSection = document.getElementById("leadSection");
+      const leadForm = document.getElementById("leadForm");
+      const leadNameInput = document.getElementById("leadName");
+      const leadPhoneInput = document.getElementById("leadPhone");
+      const leadEmailInput = document.getElementById("leadEmail");
+      const leadIntentInput = document.getElementById("leadIntent");
+      const leadFormMessage = document.getElementById("leadFormMessage");
+      const leadSubmitButton = document.getElementById("leadSubmitButton");
       const audioEl = document.getElementById("assistantAudio");
       const conversationEl = document.getElementById("conversation");
+      const conversationSection = document.getElementById("conversationSection");
+      const conversationActions = document.getElementById("conversationActions");
       const textForm = document.getElementById("textForm");
       const textInput = document.getElementById("textInput");
 
@@ -351,6 +500,17 @@
       const processedInputItems = new Set();
       const cachedSearchSummaries = new Map();
       const pendingTypedMessages = [];
+      let isStartingSession = false;
+      let isConversationVisible = false;
+      let isVoiceConnected = false;
+      let hasPromotedVoiceButton = false;
+      let voiceControlButton = leadSubmitButton;
+      const leadState = {
+        submitted: false,
+        payload: null,
+        leadId: null,
+        source: ""
+      };
       const RAW_API_BASE =
         window.API_BASE_URL ||
         (window.location.hostname === "localhost"
@@ -362,10 +522,9 @@
         return `${API_BASE}${normalizedPath}`;
       };
 
-      appendMessage(
-        "agent",
-        "Hello! Tap the microphone to start a conversation about any StarShield product or scenario."
-      );
+      setLeadFormMessage("Enter your details to create a Dynamics 365 lead and start the voice assistant.");
+      setConversationVisible(false);
+      setLeadSectionVisible(true);
 
       function setStatus(message, type = "") {
         statusEl.textContent = message;
@@ -400,6 +559,98 @@
 
         conversationEl.appendChild(wrapper);
         conversationEl.scrollTop = conversationEl.scrollHeight;
+      }
+
+      function setLeadFormMessage(message, status = "") {
+        if (!leadFormMessage) return;
+        const text = (message || "").trim();
+        leadFormMessage.textContent = text;
+        if (status) {
+          leadFormMessage.setAttribute("data-status", status);
+        } else {
+          leadFormMessage.removeAttribute("data-status");
+        }
+      }
+
+      function toggleLeadInputs(disabled) {
+        if (!leadForm) return;
+        leadForm.querySelectorAll("input, textarea").forEach(el => {
+          el.disabled = disabled;
+        });
+        if (leadSubmitButton) leadSubmitButton.disabled = disabled;
+      }
+
+      function setLeadSectionVisible(visible) {
+        if (!leadSection) return;
+        leadSection.classList.toggle("is-hidden", !visible);
+      }
+
+      function setConversationVisible(visible) {
+        isConversationVisible = visible;
+        if (conversationSection) {
+          conversationSection.classList.toggle("is-hidden", !visible);
+        }
+        if (textInput) {
+          textInput.disabled = !visible;
+        }
+        if (conversationActions) {
+          conversationActions.classList.toggle(
+            "is-hidden",
+            !visible || !hasPromotedVoiceButton
+          );
+        }
+      }
+
+      function promoteButtonToVoiceControl() {
+        if (!voiceControlButton || hasPromotedVoiceButton || !conversationActions) return;
+        hasPromotedVoiceButton = true;
+        voiceControlButton.type = "button";
+        voiceControlButton.classList.add("lead-submit--voice");
+        voiceControlButton.textContent = "Connecting...";
+        voiceControlButton.disabled = true;
+        conversationActions.classList.remove("is-hidden");
+        conversationActions.prepend(voiceControlButton);
+        voiceControlButton.addEventListener("click", handleVoiceToggle);
+      }
+
+      function setVoiceButtonState(state) {
+        if (!voiceControlButton) return;
+        switch (state) {
+          case "connecting":
+            voiceControlButton.disabled = true;
+            voiceControlButton.textContent = "Connecting...";
+            voiceControlButton.dataset.mode = "connecting";
+            break;
+          case "active":
+            voiceControlButton.disabled = false;
+            voiceControlButton.textContent = "Stop Voice Consultation";
+            voiceControlButton.dataset.mode = "stop";
+            break;
+          default:
+            voiceControlButton.disabled = false;
+            voiceControlButton.textContent = "Start Voice Consultation";
+            voiceControlButton.dataset.mode = "start";
+        }
+      }
+
+      function handleVoiceToggle() {
+        if (isStartingSession) return;
+        if (isVoiceConnected) {
+          setStatus("Stopping voice session…");
+          stopVoice();
+        } else {
+          setStatus("Reconnecting voice session…");
+          startVoice();
+        }
+      }
+
+      function getLeadFormValues() {
+        return {
+          name: (leadNameInput?.value || "").trim(),
+          phone: (leadPhoneInput?.value || "").trim(),
+          email: (leadEmailInput?.value || "").trim(),
+          intent: (leadIntentInput?.value || "").trim()
+        };
       }
 
       function normalizeWhitespace(text = "") {
@@ -485,20 +736,12 @@
           return "StarShield is a protective coatings and advanced paints company. I couldn't find matching information in the StarShield knowledge base, so ask follow-up questions about our paint and coating solutions.";
         }
 
-        const [primary, ...rest] = items;
+        const [primary] = items;
         const cleaned = summarizeSnippet(primary?.snippet, primary?.title);
-        let narrative = `StarShield is a protective coatings and advanced paints company. Here's what I found on ${cleaned.productName}: ${cleaned.description}`;
+        let narrative = `StarShield is a protective coatings and advanced paints company. The most relevant insight about ${cleaned.productName} is: ${cleaned.description}`;
 
         if (cleaned.bulletPoints.length) {
-          narrative += ` Key points include ${cleaned.bulletPoints.join("; ")}.`;
-        }
-
-        const additionalTitles = rest
-          .map(item => item?.title)
-          .filter(title => title && title !== cleaned.productName)
-          .slice(0, 3);
-        if (additionalTitles.length) {
-          narrative += ` I also spotted related products like ${additionalTitles.join(", ")}.`;
+          narrative += ` Important details include ${cleaned.bulletPoints.join("; ")}.`;
         }
 
         return narrative;
@@ -530,7 +773,6 @@
           }
 
           logEvent(`Auto search summary:\n${summary}`);
-          appendMessage("kb", summary);
 
           const shouldSendSummary =
             isNewSummary || !processedInputItems.has(`summary-${lower}`);
@@ -549,7 +791,7 @@
                   content: [
                     {
                       type: "input_text",
-                      text: `Knowledge base summary:\n${summary}\n\nCompose a natural, conversational reply for the user that weaves these points into fluent sentences.`
+                      text: `Knowledge base summary for later use:\n${summary}\n\nDo not use this information until you have confirmed the customer's name and phone number. When you do reference it, respond conversationally without exposing document titles or raw notes.`
                     }
                   ]
                 }
@@ -651,7 +893,7 @@
               break;
             }
             case "create_lead": {
-              const { name, phone, intent } = args;
+              const { name, phone, intent, email } = args;
               if (!name || !phone || !intent) {
                 throw new Error(
                   "create_lead requires name, phone, and intent fields"
@@ -660,7 +902,8 @@
               result = await callToolEndpoint("create_lead", {
                 name,
                 phone,
-                intent
+                intent,
+                email
               });
               break;
             }
@@ -692,8 +935,89 @@
       }
       ping();
 
-      async function startVoice() {
+      async function handleLeadSubmit(evt) {
+        evt.preventDefault();
+        if (isStartingSession) return;
+
+        const { name, phone, email, intent } = getLeadFormValues();
+
+        if (!leadState.submitted) {
+          if (!name || !phone || !intent) {
+            setLeadFormMessage("Please add your name, phone number, and project focus to begin.", "error");
+            return;
+          }
+
+          setLeadFormMessage("Syncing your details with Dynamics 365...", "pending");
+          toggleLeadInputs(true);
+
+          const payload = { name, phone, intent };
+          if (email) {
+            payload.email = email;
+          }
+
+          try {
+            const result = await callToolEndpoint("create_lead", payload);
+            const source = (result?.source || "").toLowerCase();
+            leadState.submitted = true;
+            leadState.payload = { name, phone, email, intent };
+            leadState.leadId = result?.lead_id || null;
+            leadState.source = source || "";
+            leadForm?.classList.add("lead-form--locked");
+            setConversationVisible(true);
+            setLeadSectionVisible(false);
+            conversationSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+            promoteButtonToVoiceControl();
+            const successStatus = source === "dynamics365" ? "success" : "pending";
+            const successMessage =
+              source === "dynamics365"
+                ? "Lead saved to Dynamics 365. Connecting you now..."
+                : "Lead captured locally. Dynamics 365 credentials are not configured yet.";
+            setLeadFormMessage(successMessage, successStatus);
+          } catch (err) {
+            toggleLeadInputs(false);
+            const message =
+              err && typeof err.message === "string"
+                ? err.message
+                : "We couldn't reach Dynamics 365. Please verify your CRM credentials and try again.";
+            setLeadFormMessage(message, "error");
+            return;
+          }
+        } else {
+          setLeadFormMessage("Reconnecting the voice session...", "pending");
+          setConversationVisible(true);
+          setLeadSectionVisible(false);
+          conversationSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+          promoteButtonToVoiceControl();
+        }
+
         try {
+          setVoiceButtonState("connecting");
+          await startVoice();
+          const connectedMessage =
+            leadState.source === "dynamics365"
+              ? "You're connected. You can speak now or type a message below."
+              : leadState.source === "stub"
+              ? "You're connected. You can speak now or type a message below. (Lead stored locally until Dynamics 365 is configured.)"
+              : "You're connected. You can speak now or type a message below.";
+          setLeadFormMessage(connectedMessage, "success");
+        } catch (err) {
+          setVoiceButtonState("ready");
+          if (!leadState.submitted) {
+            toggleLeadInputs(false);
+          }
+          const message =
+            err && typeof err.message === "string"
+              ? err.message
+              : "Unable to start the voice session. Please retry.";
+          setLeadFormMessage(message, "error");
+        }
+      }
+
+      async function startVoice() {
+        if (isStartingSession) return;
+        try {
+          isStartingSession = true;
+          setVoiceButtonState("connecting");
           setStatus("Creating real-time session...");
           logEvent("Requesting ephemeral session from backend");
           conversationEl.innerHTML = "";
@@ -701,7 +1025,7 @@
           processedInputItems.clear();
           cachedSearchSummaries.clear();
           pendingTypedMessages.length = 0;
-          appendMessage("agent", "Voice session is live. Ask about any StarShield product or tap the mic to talk.");
+          appendMessage("agent", "Voice session is live. I'm ready to help with any StarShield project questions.");
 
           const sessionResponse = await fetch(apiUrl("/session"));
           const sessionPayload = await sessionResponse.json().catch(() => ({}));
@@ -732,7 +1056,9 @@
             logEvent("Data channel opened");
             const brandPrimer = [
               "You are the StarShield paints assistant for an Indian company that specializes in advanced paints, waterproofing, insulation, and protective coatings. Never refer to StarShield as a security or defense company.",
-              "Keep every reply focused on StarShield's paints and surface-protection solutions.",
+              "The customer's contact information was already collected in the onboarding form. Do not ask for their name or phone number again; instead, acknowledge their project and move forward.",
+              "Open with a warm greeting, confirm the project intent captured in the form, and keep every reply focused on StarShield's paints and surface-protection solutions.",
+              "Never expose raw knowledge-base snippets, file names, or document titles to customers; weave the information into natural responses.",
               "Do not share or mention any URLs, links, or document addresses with customers. Offer summaries instead."
             ].join("\n");
             dataChannel.send(
@@ -750,6 +1076,35 @@
                 }
               })
             );
+            if (leadState.payload) {
+              const { name, phone, email, intent } = leadState.payload;
+              const details = [
+                name ? `Customer name: ${name}` : "",
+                phone ? `Customer phone: ${phone}` : "",
+                email ? `Customer email: ${email}` : "",
+                intent ? `Project focus: ${intent}` : ""
+              ]
+                .filter(Boolean)
+                .join("\n");
+
+              if (details) {
+                dataChannel.send(
+                  JSON.stringify({
+                    type: "conversation.item.create",
+                    item: {
+                      type: "message",
+                      role: "system",
+                      content: [
+                        {
+                          type: "input_text",
+                          text: `Onboarding form details (already confirmed with the customer):\n${details}\n\nDo not prompt the customer for these again. Acknowledge them politely and move straight into tailored guidance.`
+                        }
+                      ]
+                    }
+                  })
+                );
+              }
+            }
           });
           dataChannel.addEventListener("close", () => logEvent("Data channel closed"));
           dataChannel.addEventListener("message", evt => {
@@ -893,16 +1248,20 @@
 
           logEvent("Realtime session ready");
           setStatus("Connected", "ok");
-          startBtn.disabled = true;
-          stopBtn.disabled = false;
+          isVoiceConnected = true;
+          setVoiceButtonState("active");
+          isStartingSession = false;
         } catch (err) {
           console.error(err);
           setStatus(err.message || "Failed to start voice session", "error");
-          stopVoice();
+          isStartingSession = false;
+          stopVoice({ silent: true });
+          setVoiceButtonState("ready");
         }
       }
 
-      function stopVoice() {
+      function stopVoice({ silent = false } = {}) {
+        isStartingSession = false;
         if (mic) {
           mic.getTracks().forEach(track => track.stop());
           mic = undefined;
@@ -914,22 +1273,34 @@
           pc.close();
           pc = undefined;
         }
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-        setStatus("Stopped");
+        isVoiceConnected = false;
+        setVoiceButtonState("ready");
+        if (!silent) {
+          setStatus("Stopped");
+          setLeadFormMessage(
+            leadState.submitted
+              ? "Session stopped. Press start to reconnect when you're ready."
+              : "Session stopped. Submit the form to start a new voice session.",
+            "pending"
+          );
+        }
         logEvent("Voice session stopped");
       }
 
-      startBtn.addEventListener("click", startVoice);
-      stopBtn.addEventListener("click", stopVoice);
-
+      if (leadForm) {
+        leadForm.addEventListener("submit", handleLeadSubmit);
+      }
       textForm.addEventListener("submit", async evt => {
         evt.preventDefault();
+        if (!isConversationVisible) {
+          setLeadFormMessage("Submit your details above to unlock the assistant.", "pending");
+          return;
+        }
         const message = (textInput.value || "").trim();
         if (!message) return;
 
         if (!dataChannel || dataChannel.readyState !== "open") {
-          appendMessage("agent", "Voice session is not connected yet. Tap the microphone first.");
+          appendMessage("agent", "Voice session is not connected yet. Tap the voice consultation button to connect.");
           return;
         }
 
@@ -960,7 +1331,9 @@
         }
       });
 
-      window.addEventListener("beforeunload", stopVoice);
+      window.addEventListener("beforeunload", () => stopVoice({ silent: true }));
     </script>
   </body>
 </html>
+
+

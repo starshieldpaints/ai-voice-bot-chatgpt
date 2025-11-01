@@ -19,13 +19,13 @@ async function handleSearchDocs(req, res) {
 }
 
 async function handleCreateLead(req, res) {
-  const { name, phone, intent } = req.body || {};
+  const { name, phone, intent, email } = req.body || {};
   if (!name || !phone || !intent) {
     return res
       .status(400)
       .json({ error: "name, phone, intent are required" });
   }
-  const result = await createLead({ name, phone, intent });
+  const result = await createLead({ name, phone, intent, email });
   res.json(result);
 }
 

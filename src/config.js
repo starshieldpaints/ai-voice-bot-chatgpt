@@ -13,6 +13,15 @@ const hasSearch =
   !!process.env.AZURE_SEARCH_INDEX &&
   !!process.env.AZURE_SEARCH_API_KEY;
 
+const dynamicsVars = [
+  "DYNAMICS_TENANT_ID",
+  "DYNAMICS_CLIENT_ID",
+  "DYNAMICS_CLIENT_SECRET",
+  "DYNAMICS_RESOURCE_URL"
+];
+
+const hasDynamics = dynamicsVars.every(key => !!process.env[key]);
+
 export const env = {
   NODE_ENV: optional("NODE_ENV", "development"),
   PORT: optional("PORT", 3001),
@@ -30,5 +39,13 @@ export const env = {
   // Prompt ID (optional but recommended)
   PROMPT_ID: optional("PROMPT_ID", ""),
 
-  CORS_ALLOW_ORIGINS: optional("CORS_ALLOW_ORIGINS", "")
+  CORS_ALLOW_ORIGINS: optional("CORS_ALLOW_ORIGINS", ""),
+
+  // Dynamics 365 (optional; enable only if all required env vars are present)
+  DYNAMICS_ENABLED: hasDynamics,
+  DYNAMICS_TENANT_ID: optional("DYNAMICS_TENANT_ID"),
+  DYNAMICS_CLIENT_ID: optional("DYNAMICS_CLIENT_ID"),
+  DYNAMICS_CLIENT_SECRET: optional("DYNAMICS_CLIENT_SECRET"),
+  DYNAMICS_RESOURCE_URL: optional("DYNAMICS_RESOURCE_URL"),
+  DYNAMICS_API_VERSION: optional("DYNAMICS_API_VERSION", "v9.2")
 };

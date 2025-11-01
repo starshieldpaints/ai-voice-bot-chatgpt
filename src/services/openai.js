@@ -41,6 +41,10 @@ const TOOLS = [
           type: "string",
           description: "Customer phone number in local or E.164 format."
         },
+        email: {
+          type: "string",
+          description: "Customer email address if provided."
+        },
         intent: {
           type: "string",
           description: "Summary of the customer's request or interest."
