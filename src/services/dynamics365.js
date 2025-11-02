@@ -48,7 +48,7 @@ async function acquireToken() {
   const payload = await response.json();
   if (!response.ok) {
     const detail = payload?.error_description || payload?.error || response.statusText;
-    const error = new Error(`Dynamics auth failed: ${detail}`);
+    const error = new Error(`CRM auth failed: ${detail}`);
     error.status = response.status;
     error.details = payload;
     throw error;
@@ -62,7 +62,7 @@ async function acquireToken() {
 
 export async function createLeadInDynamics({ name, phone, email, intent }) {
   if (!env.DYNAMICS_ENABLED) {
-    throw new Error("Dynamics 365 is not configured");
+    throw new Error("CRM is not configured");
   }
 
   const token = await acquireToken();
@@ -108,7 +108,7 @@ export async function createLeadInDynamics({ name, phone, email, intent }) {
     } catch {
       details = { raw: await response.text() };
     }
-    const error = new Error(`Dynamics lead creation failed (status ${response.status})`);
+    const error = new Error(`CRM lead creation failed (status ${response.status})`);
     error.status = response.status;
     error.details = details;
     throw error;

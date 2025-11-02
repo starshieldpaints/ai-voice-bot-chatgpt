@@ -425,7 +425,7 @@
           <form id="leadForm" class="lead-form" autocomplete="off" novalidate>
             <div class="lead-intro">
               <h2>Start Your Consultation</h2>
-              <p>Share your details to sync a lead in Dynamics 365 and launch the live voice assistant.</p>
+              <p>Share your details to launch the live voice assistant.</p>
             </div>
             <div class="lead-grid">
               <div class="lead-field">
@@ -522,7 +522,7 @@
         return `${API_BASE}${normalizedPath}`;
       };
 
-      setLeadFormMessage("Enter your details to create a Dynamics 365 lead and start the voice assistant.");
+      setLeadFormMessage("Enter your details to create a lead and start the voice assistant.");
       setConversationVisible(false);
       setLeadSectionVisible(true);
 
@@ -947,7 +947,7 @@
             return;
           }
 
-          setLeadFormMessage("Syncing your details with Dynamics 365...", "pending");
+          setLeadFormMessage("Syncing your details", "pending");
           toggleLeadInputs(true);
 
           const payload = { name, phone, intent };
@@ -970,15 +970,15 @@
             const successStatus = source === "dynamics365" ? "success" : "pending";
             const successMessage =
               source === "dynamics365"
-                ? "Lead saved to Dynamics 365. Connecting you now..."
-                : "Lead captured locally. Dynamics 365 credentials are not configured yet.";
+                ? "Lead saved. Connecting you now..."
+                : "Lead captured locally.Credentials are not configured yet.";
             setLeadFormMessage(successMessage, successStatus);
           } catch (err) {
             toggleLeadInputs(false);
             const message =
               err && typeof err.message === "string"
                 ? err.message
-                : "We couldn't reach Dynamics 365. Please verify your CRM credentials and try again.";
+                : "We couldn't reach CRM. Please verify your CRM credentials and try again.";
             setLeadFormMessage(message, "error");
             return;
           }
@@ -997,7 +997,7 @@
             leadState.source === "dynamics365"
               ? "You're connected. You can speak now or type a message below."
               : leadState.source === "stub"
-              ? "You're connected. You can speak now or type a message below. (Lead stored locally until Dynamics 365 is configured.)"
+              ? "You're connected. You can speak now or type a message below. (Lead stored locally until CRM is configured.)"
               : "You're connected. You can speak now or type a message below.";
           setLeadFormMessage(connectedMessage, "success");
         } catch (err) {
