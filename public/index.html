@@ -513,9 +513,9 @@
       };
       const RAW_API_BASE =
         window.API_BASE_URL ||
-        (window.location.hostname === "localhost"
+        (["localhost", "127.0.0.1"].includes(window.location.hostname)
           ? ""
-          : "https://voice-agent-1058353954635.us-central1.run.app");
+          : window.location.origin);
       const API_BASE = RAW_API_BASE.replace(/\/$/, "");
       const apiUrl = path => {
         const normalizedPath = path.startsWith("/") ? path : `/${path}`;

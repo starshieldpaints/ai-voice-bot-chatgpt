@@ -21,6 +21,8 @@ const dynamicsVars = [
 ];
 
 const hasDynamics = dynamicsVars.every(key => !!process.env[key]);
+const twilioVars = ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_NUMBER", "TWILIO_TWIML_URL"];
+const hasTwilio = twilioVars.every(key => !!process.env[key]);
 
 export const env = {
   NODE_ENV: optional("NODE_ENV", "development"),
@@ -47,5 +49,14 @@ export const env = {
   DYNAMICS_CLIENT_ID: optional("DYNAMICS_CLIENT_ID"),
   DYNAMICS_CLIENT_SECRET: optional("DYNAMICS_CLIENT_SECRET"),
   DYNAMICS_RESOURCE_URL: optional("DYNAMICS_RESOURCE_URL"),
-  DYNAMICS_API_VERSION: optional("DYNAMICS_API_VERSION", "v9.2")
+  DYNAMICS_API_VERSION: optional("DYNAMICS_API_VERSION", "v9.2"),
+
+  // Twilio outbound calling + TwiML webhook (optional; enable only if all required env vars are present)
+  TWILIO_ENABLED: hasTwilio,
+  TWILIO_ACCOUNT_SID: optional("TWILIO_ACCOUNT_SID"),
+  TWILIO_AUTH_TOKEN: optional("TWILIO_AUTH_TOKEN"),
+  TWILIO_NUMBER: optional("TWILIO_NUMBER"),
+  TWILIO_TWIML_URL: optional("TWILIO_TWIML_URL"),
+  TWILIO_STATUS_CALLBACK_URL: optional("TWILIO_STATUS_CALLBACK_URL", ""),
+  TWILIO_STREAM_URL: optional("TWILIO_STREAM_URL", "")
 };

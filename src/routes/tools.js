@@ -2,6 +2,7 @@ import { Router } from "express";
 import { env } from "../config.js";
 import { searchDocs } from "../services/azureSearch.js";
 import { createLead } from "../services/leads.js";
+import { initiateOutboundCall } from "../services/twilio.js";
 
 const router = Router();
 
@@ -29,6 +30,20 @@ async function handleCreateLead(req, res) {
   res.json(result);
 }
 
+async function handleCallLead(req, res) {
+  if (!env.TWILIO_ENABLED) {
+    return res
+      .status(501)
+      .json({ error: "Twilio not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER." });
+  }
+  const { phone } = req.body || {};
+  if (!phone) {
+    return res.status(400).json({ error: "phone is required" });
+  }
+  const call = await initiateOutboundCall({ to: phone });
+  res.json({ ok: true, sid: call.sid, status: call.status });
+}
+
 router.post("/search_docs", async (req, res, next) => {
   try {
     await handleSearchDocs(req, res);
@@ -45,6 +60,14 @@ router.post("/create_lead", async (req, res, next) => {
   }
 });
 
+router.post("/call_lead", async (req, res, next) => {
+  try {
+    await handleCallLead(req, res);
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.post("/:toolName", async (req, res, next) => {
   const toolName = (req.params.toolName || "").trim();
   try {
@@ -54,6 +77,9 @@ router.post("/:toolName", async (req, res, next) => {
         break;
       case "create_lead":
         await handleCreateLead(req, res);
+        break;
+      case "call_lead":
+        await handleCallLead(req, res);
         break;
       default:
         res.status(404).json({ error: "Tool not found" });
