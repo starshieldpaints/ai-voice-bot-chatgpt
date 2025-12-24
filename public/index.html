@@ -653,6 +653,17 @@
         };
       }
 
+      function normalizePhoneNumber(raw = "") {
+        const trimmed = raw.trim();
+        if (!trimmed) return "";
+        const cleaned = trimmed.replace(/[^\d+]/g, "");
+        if (!cleaned) return trimmed;
+        if (cleaned.startsWith("+")) {
+          return `+${cleaned.slice(1).replace(/\+/g, "")}`;
+        }
+        return cleaned.replace(/\+/g, "");
+      }
+
       function normalizeWhitespace(text = "") {
         return text.replace(/\s+/g, " ").trim();
       }
@@ -962,6 +973,25 @@
             leadState.payload = { name, phone, email, intent };
             leadState.leadId = result?.lead_id || null;
             leadState.source = source || "";
+
+            let callLeadMessage = "";
+            let callLeadStatus = "";
+            const dialPhone = normalizePhoneNumber(phone);
+            if (dialPhone) {
+              try {
+                const callResult = await callToolEndpoint("call_lead", { phone: dialPhone });
+                if (callResult?.sid) {
+                  callLeadMessage = "Lead saved. Calling the phone number you provided now...";
+                  callLeadStatus = "success";
+                }
+              } catch (callErr) {
+                logEvent(`call_lead failed: ${callErr?.message || callErr}`);
+                callLeadMessage =
+                  "Lead saved. Phone call failed to start; use the web voice button.";
+                callLeadStatus = "error";
+              }
+            }
+
             leadForm?.classList.add("lead-form--locked");
             setConversationVisible(true);
             setLeadSectionVisible(false);
@@ -972,7 +1002,9 @@
               source === "dynamics365"
                 ? "Lead saved. Connecting you now..."
                 : "Lead captured locally.Credentials are not configured yet.";
-            setLeadFormMessage(successMessage, successStatus);
+            const message = callLeadMessage || successMessage;
+            const status = callLeadStatus || successStatus;
+            setLeadFormMessage(message, status);
           } catch (err) {
             toggleLeadInputs(false);
             const message =
