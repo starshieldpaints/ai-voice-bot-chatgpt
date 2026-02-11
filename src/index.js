@@ -37,7 +37,7 @@ app.use("/events", eventsRouter);
 app.use(notFound);
 app.use(errorHandler);
 
-const server = app.listen(env.PORT, () => {
+const server = app.listen(env.PORT || 8080, () => {
   console.log(`[voice-agent] Voice backend running on http://localhost:${env.PORT}`);
 });
 
