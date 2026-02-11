@@ -5,6 +5,7 @@ import { searchDocs } from "./azureSearch.js";
 import { createLead } from "./leads.js";
 import { consumePrefetchedSession } from "./realtimeSessionCache.js";
 import { firebaseLoggingEnabled, recordConversationEvent } from "./firebase.js";
+import { generateAndStoreSummary } from "./summary.js";
 import { log, warn, err } from "../utils/logger.js";
 
 const OUTPUT_AUDIO_FORMAT = "g711_ulaw";
@@ -51,7 +52,9 @@ function createSession(twilioSocket) {
     lastAssistantItem: undefined,
     responseStartTimestamp: undefined,
     latestMediaTimestamp: undefined,
-    loggedEvents: new Set()
+    loggedEvents: new Set(),
+    leadId: undefined,
+    transcriptParts: []
   };
 }
 
@@ -64,6 +67,8 @@ function teardownSession(session) {
   session.lastAssistantItem = undefined;
   session.responseStartTimestamp = undefined;
   session.latestMediaTimestamp = undefined;
+  session.leadId = undefined;
+  session.transcriptParts = [];
   if (session.loggedEvents) {
     session.loggedEvents.clear();
   }
@@ -106,6 +111,14 @@ function handleTwilioMessage(session, raw) {
         kind: "call_status",
         metadata: { status: "ended" }
       });
+      if (session.transcriptParts && session.transcriptParts.length > 0) {
+        generateAndStoreSummary({
+          conversationId: session.conversationId,
+          leadId: session.leadId || null,
+          transcriptParts: [...session.transcriptParts],
+          channel: "phone"
+        }).catch(e => warn("Post-call summary failed", e));
+      }
       teardownSession(session);
       closeSocket(session.twilioSocket);
       break;
@@ -218,6 +231,9 @@ function handleModelMessage(session, raw) {
         kind: "user_transcript",
         metadata: { itemId: event.item_id }
       });
+      if (transcript.trim()) {
+        session.transcriptParts.push({ role: "user", text: transcript.trim() });
+      }
       break;
     }
     case "response.audio_transcript.done": {
@@ -233,6 +249,9 @@ function handleModelMessage(session, raw) {
         kind: "assistant_transcript",
         metadata: { itemId: event.item_id }
       });
+      if (transcript.trim()) {
+        session.transcriptParts.push({ role: "assistant", text: transcript.trim() });
+      }
       break;
     }
     case "response.output_text.done": {
@@ -326,6 +345,9 @@ async function handleFunctionCall(session, item) {
           throw new Error("name, phone, intent are required");
         }
         const result = await createLead({ name, phone, intent, email });
+        if (result?.lead_id) {
+          session.leadId = result.lead_id;
+        }
         await sendFunctionResult(session, callId, result);
         break;
       }

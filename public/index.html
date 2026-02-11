@@ -500,6 +500,7 @@
       const processedInputItems = new Set();
       const cachedSearchSummaries = new Map();
       const pendingTypedMessages = [];
+      const collectedTranscript = [];
       let isStartingSession = false;
       let isConversationVisible = false;
       let isVoiceConnected = false;
@@ -997,11 +998,11 @@
             setLeadSectionVisible(false);
             conversationSection?.scrollIntoView({ behavior: "smooth", block: "start" });
             promoteButtonToVoiceControl();
-            const successStatus = source === "dynamics365" ? "success" : "pending";
+            const successStatus = source === "odoo" ? "success" : "pending";
             const successMessage =
-              source === "dynamics365"
+              source === "odoo"
                 ? "Lead saved. Connecting you now..."
-                : "Lead captured locally.Credentials are not configured yet.";
+                : "Lead captured locally. CRM credentials are not configured yet.";
             const message = callLeadMessage || successMessage;
             const status = callLeadStatus || successStatus;
             setLeadFormMessage(message, status);
@@ -1026,7 +1027,7 @@
           setVoiceButtonState("connecting");
           await startVoice();
           const connectedMessage =
-            leadState.source === "dynamics365"
+            leadState.source === "odoo"
               ? "You're connected. You can speak now or type a message below."
               : leadState.source === "stub"
               ? "You're connected. You can speak now or type a message below. (Lead stored locally until CRM is configured.)"
@@ -1057,6 +1058,7 @@
           processedInputItems.clear();
           cachedSearchSummaries.clear();
           pendingTypedMessages.length = 0;
+          collectedTranscript.length = 0;
           appendMessage("agent", "Voice session is live. I'm ready to help with any StarShield project questions.");
 
           const sessionResponse = await fetch(apiUrl("/session"));
@@ -1192,6 +1194,7 @@
                   "";
                 if (finalTranscript) {
                   appendMessage("user", finalTranscript.trim());
+                  collectedTranscript.push({ role: "user", text: finalTranscript.trim() });
                   transcriptBuffer.delete(key);
                   if (!processedInputItems.has(payload.item_id)) {
                     processedInputItems.add(payload.item_id);
@@ -1224,7 +1227,10 @@
                 } else {
                   final = transcriptBuffer.get(key) || "";
                 }
-                if (final) appendMessage("agent", final.trim());
+                if (final) {
+                  appendMessage("agent", final.trim());
+                  collectedTranscript.push({ role: "assistant", text: final.trim() });
+                }
                 transcriptBuffer.delete(key);
                 break;
               }
@@ -1241,7 +1247,10 @@
                   (typeof payload.transcript === "string" && payload.transcript) ||
                   transcriptBuffer.get(payload.item_id) ||
                   "";
-                if (final) appendMessage("agent", final.trim());
+                if (final) {
+                  appendMessage("agent", final.trim());
+                  collectedTranscript.push({ role: "assistant", text: final.trim() });
+                }
                 transcriptBuffer.delete(payload.item_id);
                 break;
               }
@@ -1304,6 +1313,15 @@
         if (pc) {
           pc.close();
           pc = undefined;
+        }
+        if (collectedTranscript.length > 0) {
+          callToolEndpoint("generate_summary", {
+            conversationId: leadState.leadId || `web-${Date.now()}`,
+            leadId: leadState.leadId,
+            transcriptParts: [...collectedTranscript],
+            channel: "web"
+          }).catch(() => {});
+          collectedTranscript.length = 0;
         }
         isVoiceConnected = false;
         setVoiceButtonState("ready");

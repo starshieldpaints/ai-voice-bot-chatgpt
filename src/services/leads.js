@@ -1,12 +1,12 @@
 import { nanoid } from "nanoid";
 import { env } from "../config.js";
-import { createLeadInDynamics } from "./dynamics365.js";
+import { createLeadInOdoo } from "./odoo.js";
 import { log, warn } from "../utils/logger.js";
 
 export async function createLead({ name, phone, intent, email }) {
-  if (env.DYNAMICS_ENABLED) {
+  if (env.ODOO_ENABLED) {
     try {
-      const result = await createLeadInDynamics({ name, phone, intent, email });
+      const result = await createLeadInOdoo({ name, phone, intent, email });
       return {
         ...result,
         stored: { name, phone, intent, email }

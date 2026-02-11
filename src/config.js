@@ -13,16 +13,14 @@ const hasSearch =
   !!process.env.AZURE_SEARCH_INDEX &&
   !!process.env.AZURE_SEARCH_API_KEY;
 
-const dynamicsVars = [
-  "DYNAMICS_TENANT_ID",
-  "DYNAMICS_CLIENT_ID",
-  "DYNAMICS_CLIENT_SECRET",
-  "DYNAMICS_RESOURCE_URL"
-];
+const odooVars = ["ODOO_BASE_URL", "ODOO_API_KEY"];
+const hasOdoo = odooVars.every(key => !!process.env[key]);
 
-const hasDynamics = dynamicsVars.every(key => !!process.env[key]);
 const twilioVars = ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_NUMBER", "TWILIO_TWIML_URL"];
 const hasTwilio = twilioVars.every(key => !!process.env[key]);
+
+const firebaseVars = ["FIREBASE_PROJECT_ID", "FIREBASE_CLIENT_EMAIL", "FIREBASE_PRIVATE_KEY"];
+const hasFirebase = firebaseVars.every(key => !!process.env[key]);
 
 export const env = {
   NODE_ENV: optional("NODE_ENV", "development"),
@@ -43,13 +41,10 @@ export const env = {
 
   CORS_ALLOW_ORIGINS: optional("CORS_ALLOW_ORIGINS", ""),
 
-  // Dynamics 365 (optional; enable only if all required env vars are present)
-  DYNAMICS_ENABLED: hasDynamics,
-  DYNAMICS_TENANT_ID: optional("DYNAMICS_TENANT_ID"),
-  DYNAMICS_CLIENT_ID: optional("DYNAMICS_CLIENT_ID"),
-  DYNAMICS_CLIENT_SECRET: optional("DYNAMICS_CLIENT_SECRET"),
-  DYNAMICS_RESOURCE_URL: optional("DYNAMICS_RESOURCE_URL"),
-  DYNAMICS_API_VERSION: optional("DYNAMICS_API_VERSION", "v9.2"),
+  // Odoo CRM (optional; enable only if all required env vars are present)
+  ODOO_ENABLED: hasOdoo,
+  ODOO_BASE_URL: optional("ODOO_BASE_URL"),
+  ODOO_API_KEY: optional("ODOO_API_KEY"),
 
   // Twilio outbound calling + TwiML webhook (optional; enable only if all required env vars are present)
   TWILIO_ENABLED: hasTwilio,
@@ -58,5 +53,13 @@ export const env = {
   TWILIO_NUMBER: optional("TWILIO_NUMBER"),
   TWILIO_TWIML_URL: optional("TWILIO_TWIML_URL"),
   TWILIO_STATUS_CALLBACK_URL: optional("TWILIO_STATUS_CALLBACK_URL", ""),
-  TWILIO_STREAM_URL: optional("TWILIO_STREAM_URL", "")
+  TWILIO_STREAM_URL: optional("TWILIO_STREAM_URL", ""),
+
+  // Firebase (optional; enable only if all credentials are present)
+  FIREBASE_ENABLED: hasFirebase,
+  FIREBASE_PROJECT_ID: optional("FIREBASE_PROJECT_ID"),
+  FIREBASE_CLIENT_EMAIL: optional("FIREBASE_CLIENT_EMAIL"),
+  FIREBASE_PRIVATE_KEY: optional("FIREBASE_PRIVATE_KEY"),
+  FIREBASE_DATABASE_URL: optional("FIREBASE_DATABASE_URL"),
+  FIREBASE_CONVERSATIONS_COLLECTION: optional("FIREBASE_CONVERSATIONS_COLLECTION", "conversations")
 };

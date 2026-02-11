@@ -3,6 +3,7 @@ import { env } from "../config.js";
 import { searchDocs } from "../services/azureSearch.js";
 import { createLead } from "../services/leads.js";
 import { initiateOutboundCall } from "../services/twilio.js";
+import { generateAndStoreSummary } from "../services/summary.js";
 
 const router = Router();
 
@@ -44,6 +45,24 @@ async function handleCallLead(req, res) {
   res.json({ ok: true, sid: call.sid, status: call.status });
 }
 
+async function handleGenerateSummary(req, res) {
+  const { conversationId, leadId, transcriptParts, channel } = req.body || {};
+  if (!conversationId) {
+    return res.status(400).json({ error: "conversationId is required" });
+  }
+  if (!Array.isArray(transcriptParts) || transcriptParts.length === 0) {
+    return res.status(400).json({ error: "transcriptParts array is required and must not be empty" });
+  }
+  generateAndStoreSummary({
+    conversationId,
+    leadId: leadId || null,
+    transcriptParts,
+    channel: channel || "web"
+  }).catch(() => {});
+
+  res.json({ ok: true, message: "Summary generation started" });
+}
+
 router.post("/search_docs", async (req, res, next) => {
   try {
     await handleSearchDocs(req, res);
@@ -68,6 +87,14 @@ router.post("/call_lead", async (req, res, next) => {
   }
 });
 
+router.post("/generate_summary", async (req, res, next) => {
+  try {
+    await handleGenerateSummary(req, res);
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.post("/:toolName", async (req, res, next) => {
   const toolName = (req.params.toolName || "").trim();
   try {
@@ -80,6 +107,9 @@ router.post("/:toolName", async (req, res, next) => {
         break;
       case "call_lead":
         await handleCallLead(req, res);
+        break;
+      case "generate_summary":
+        await handleGenerateSummary(req, res);
         break;
       default:
         res.status(404).json({ error: "Tool not found" });
